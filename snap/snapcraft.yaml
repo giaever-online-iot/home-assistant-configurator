@@ -23,9 +23,16 @@ apps:
       - configurations
   certs-daemon:
     command: bin/certs-daemon
-    # daemon: oneshot
-    # restart-condition: always
-    # timer: 00:00-24:00/287
+    daemon: oneshot
+    restart-condition: always
+    timer: 00:00-24:00/287
+    slots:
+      - certs
+    plugs:
+      - network
+      - network-bind
+  refresh-certs:
+    command: bin/certs-daemon
     slots:
       - certs
     plugs:
