@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+snapctl is-connected certs
+
+if [ $? -eq 0 ]; then
+
+    DOMAIN=`snapctl get domain`
+    if [ $? -ne 0 ]; then
+        logger "Missing domain, use 'snap set ${SNAP_NAME} domain=<domain>'"
+        exit 0
+    fi
+
+    source "${SNAP}/helper/init"
+
+    readarray -d '' DOMAIN_DIR < <(find "${CERTS_DIR}" -type d -name "${DOMAIN}" -print0)
+
+    if [ "${#DOMAIN_DIR[@]}" -ne 1 ]; then
+        logger "Not a unique match for domain ${DOMAIN}"
+        exit 1
+    fi
+
+    DOMAIN_DIR="${DOMAIN_DIR[0]}"
+
+    LAST_EDIT=`stat "${DOMAIN_DIR}/.time" --format="%Y" 2> /dev/null || echo 0`
+    CURR_EDIT=`stat "${SSL_DIR}/.time" --format="%Y" 2> /dev/null || echo 0`
+
+    if [ "${LAST_EDIT}" -le "${CURR_EDIT}" ]; then
+        logger "No new certificate for ${DOMAIN}: `expr ${CURR_EDIT} - ${LAST_EDIT}`"
+        exit 0
+    fi
+
+    readarray -d '' CERTS < <(find "${DOMAIN_DIR}" -type f -name "*.gpg" -print0)
+
+    gpg_start_agent
+
+    for CERT in "${CERTS[@]}"; do
+        DEST="${SSL_DIR}/`basename "${CERT}" ".gpg"`"
+        CURR=""
+
+        if [ -f "${DEST}" ]; then
+            CURR=`cat "${DEST}"`
+        fi
+
+        gpg --batch --yes --output "${DEST}" --decrypt "${CERT}"
+
+        if [ -n "${CURR}" ]; then
+            DIFF=`echo "${CURR}" | diff "${DEST}" -`
+            if [ $? -ne 0 ]; then
+                echo "${ORIG}" > "${DEST}.backup"
+            fi
+        fi
+    done
+    cp -f "${DOMAIN_DIR}/.time" "${SSL_DIR}/.time"
+    logger "Replaced certificate ${DOMAIN} for snap ${SNAP_NAME}"
+    snapctl restart "${SNAP_NAME}.server"
+    gpg_close_agent
+fi

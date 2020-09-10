@@ -1,0 +1,89 @@
+name: home-assistant-configurator
+base: core20 
+version: '0.4.0'
+summary: Configuration UI for Home Assistant
+description: |
+  The HASS-Configurator is a small webapp (you access it via web browser) that provides a filesystem-browser and text-editor to modify files on the machine the configurator is running on. It has been created to allow easy configuration of Home Assistant. It is powered by Ace editor, which supports syntax highlighting for various code/markup languages. YAML files (the default language for Home Assistant configuration files) will be automatically checked for syntax errors while editing.
+
+  Please configure the snap thout `snap set home-assistant-configurator server.*=`,
+  see `snap get home-assistant-configurator` after installation.
+
+  This snap requires the snap `home-assistant-snap`
+grade: stable
+confinement: strict
+
+apps:
+  server:
+    command: bin/hass-configurator -dH $SNAP_DATA/settings.conf
+    daemon: simple
+    restart-condition: always
+    plugs:
+      - network
+      - network-bind
+      - configurations
+  certs-daemon:
+    command: bin/certs-daemon
+    # daemon: oneshot
+    # restart-condition: always
+    # timer: 00:00-24:00/287
+    slots:
+      - certs
+    plugs:
+      - network
+      - network-bind
+
+slots:
+  certs:
+    interface: content
+    content: certs
+    write:
+      - $SNAP_DATA/certs
+
+plugs:
+  configurations:
+    interface: content
+    target: $SNAP_COMMON/configurations
+    default-provider: home-assistant-snap
+
+hooks:
+  prepare-slot-certs:
+    plugs:
+      - network
+      - network-bind
+
+parts:
+  configurator:
+    plugin: python
+    source: https://github.com/danielperna84/hass-configurator.git
+    source-tag: ${SNAPCRAFT_PROJECT_VERSION}
+    build-environment:
+      - PYTHONPATH: "/usr/lib/python3/dist-packages"
+    build-packages:
+      - python3
+      - python3-dev 
+      - python3-wheel
+      - python3-venv
+      - python3-pip
+    stage:
+      - lib64/python3.8
+      - bin
+      - include
+      - lib
+      - pyvenv.cfg
+      - settings.conf
+      - share
+    override-build: |
+      snapcraftctl build
+      cp ${SNAPCRAFT_PART_BUILD}/settings.conf ${SNAPCRAFT_PART_INSTALL}/settings.conf
+  scripts:
+    plugin: dump
+    source: ./scripts
+    source-type: local
+    organize:
+      hooks: snap/hooks
+    stage-packages:
+      - uuid
+      - libossp-uuid16
+      - libassuan0
+      - gpg
+      - gpg-agent

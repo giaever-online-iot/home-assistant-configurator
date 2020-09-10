@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+cp "${SNAP}/settings.conf" "${SNAP_DATA}/settings.conf"
+
+$SNAP/bin/update-settings "${SNAP_DATA}/settings.conf" "install" | while read LINE; do
+    logger "${LINE}"
+    snapctl set "${LINE}"
+done

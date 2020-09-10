@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e 
+
+snapctl get server | $SNAP/bin/update-settings "${SNAP_DATA}/settings.conf" update
+snapctl restart "${SNAP_NAME}.server"
+exit $?

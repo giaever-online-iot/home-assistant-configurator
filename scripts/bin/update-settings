@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+
+import json, sys, subprocess, ast
+
+if len(sys.argv) < 3:
+    print(f"Error, use {sys.argv[0]} install|update")
+    sys.exit(1)
+
+settings = sys.argv[1]
+
+conv = {
+    "LISTENIP": ("listen.ip", str),
+    "PORT": ("listen.port", int),
+    "GIT": ("git", bool),
+    "BASEPATH": ("basepath.dir", str),
+    "ENFORCE_BASEPATH": ("basepath.enforce", bool),
+    "SSL_CERTIFICATE": ("ssl.certificate", str),
+    "SSL_KEY": ("ssl.key", str),
+    "IGNORE_SSL": ("ssl.ignore", bool),
+    "HASS_API": ("hass.api.url", str),
+    "HASS_WS_API": ("hass.api.ws-url", str),
+    "HASS_API_PASSWORD": ("hass.api.password", str),
+    "USERNAME": ("login.username", str),
+    "PASSWORD": ("login.password", str),
+    "ALLOWED_NETWORKS": ("allowed.networks", list),
+    "ALLOWED_DOMAINS": ("allowed.domains", list),
+    "BANNED_IPS": ("ban.ips", list),
+    "BANLIMIT": ("ban.limit", list),
+    "IGNORE_PATTERN": ("ignore-pattern", list),
+    "DIRSFIRST": ("dirs-first", bool),
+    "SESAME": ("sesame.key", str),
+    "SESAME_TOTP_SECRET": ("sesame.secret", str),
+    "VERIFY_HOSTNAME": ("verify-hostname", bool),
+    "ENV_PREFIX": ("env-prefix",  str),
+    "NOTIFY_SERVICE": ("notify-service", str)
+}
+
+def read(param=None):
+
+    with open(settings, "r") as json_file:
+        obj = json.load(json_file)
+
+        if param is None:
+            return obj
+
+        if param in obj:
+            return obj[param]
+
+    sys.exit(1)
+
+def iterate_obj(obj, orig, i, path=""):
+
+    if not isinstance(obj, dict):
+        raise Exception("Invalid data")
+
+    for k,v in obj.items():
+        if isinstance(v, dict):
+            iterate_obj(v, orig, i, path+k+".")
+        else:
+            key=path+k
+            for origkey, conversion in conv.items():
+                if key == conversion[0]:
+                    if conversion[1] == list:
+                        orig[origkey] = ast.literal_eval(v)
+                    elif conversion[1] == bool:
+                        orig[origkey] = True if v.lower() == "true" else False
+                    else:
+                        if v.lower() in ("none", "null"):
+                            v = "null"
+                        else:
+                            orig[origkey] = (conversion[1])(v)
+                    i[0] = i[0] + 1
+                    break
+
+if sys.argv[2] == "update":
+    try:
+        new = json.loads(sys.stdin.read())
+        orig = read()
+
+        i = [0]
+        iterate_obj(new, orig, i)
+
+        assert i[0] == len(conv), f"Wrong number of entries, {i[0]} != {len(conv)}."
+
+        with open(settings, "w+") as json_file:
+            json.dump(orig, json_file, indent=4)
+
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    sys.exit(0)
+if sys.argv[2] == "install":
+    obj = read()
+    for k, v in obj.items():
+        print(f"server.{conv[k][0]}=\"{v}\"")
+    sys.exit(0)
+sys.exit(1)

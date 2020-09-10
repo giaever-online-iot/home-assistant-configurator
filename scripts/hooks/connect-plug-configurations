@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+snapctl set server.basepath.dir="${SNAP_COMMON}/configurations"
+snapctl set server.basepath.enforce=True
+snapctl get server | $SNAP/bin/update-settings "${SNAP_DATA}/settings.conf" update
+snapctl restart "${SNAP_NAME}.server"
