@@ -8,7 +8,7 @@ description: |
   Please configure the snap thout `snap set home-assistant-configurator server.*=`,
   see `snap get home-assistant-configurator` after installation.
 
-  This snap requires the snap `home-assistant-snap`
+  This snap requires the snap `home-assistant-snap`. Please disable 'acme-sh' before installation, if acme-sh is installed.
 grade: stable
 confinement: strict
 
