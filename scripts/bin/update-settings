@@ -25,7 +25,7 @@ conv = {
     "ALLOWED_NETWORKS": ("allowed.networks", list),
     "ALLOWED_DOMAINS": ("allowed.domains", list),
     "BANNED_IPS": ("ban.ips", list),
-    "BANLIMIT": ("ban.limit", list),
+    "BANLIMIT": ("ban.limit", int),
     "IGNORE_PATTERN": ("ignore-pattern", list),
     "DIRSFIRST": ("dirs-first", bool),
     "SESAME": ("sesame.key", str),
