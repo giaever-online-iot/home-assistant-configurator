@@ -63,9 +63,6 @@ parts:
     plugin: python
     source: https://github.com/danielperna84/hass-configurator.git
     source-tag: ${SNAPCRAFT_PROJECT_VERSION}
-    python-packages:
-      - GitPython
-      - pyotp
     build-environment:
       - PYTHONPATH: "/usr/lib/python3/dist-packages"
     build-packages:
@@ -74,8 +71,11 @@ parts:
       - python3-wheel
       - python3-venv
       - python3-pip
+    stage-packages:
+      - python3-git
+      - python3-pyotp
     stage:
-      - lib64/python3.8
+      #- lib64/python3.8
       - bin
       - include
       - lib
