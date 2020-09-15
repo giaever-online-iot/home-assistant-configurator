@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+if [ `id -gn` != "root" ]; then
+    echo "Run as root!"
+    exit 1
+fi
+
 snapctl is-connected certs
 
 if [ $? -eq 0 ]; then
 
+    echo "See log (journal -exf --grep=snap.${SNAP_NAME}*) for result"
     DOMAIN=`snapctl get domain`
     if [ $? -ne 0 ]; then
         logger "Missing domain, use 'snap set ${SNAP_NAME} domain=<domain>'"
