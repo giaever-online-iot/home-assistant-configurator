@@ -83,6 +83,7 @@ parts:
       - pyvenv.cfg
       - settings.conf
       - share
+      - usr
     override-build: |
       snapcraftctl build
       cp ${SNAPCRAFT_PART_BUILD}/settings.conf ${SNAPCRAFT_PART_INSTALL}/settings.conf
