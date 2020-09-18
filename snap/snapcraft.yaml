@@ -75,6 +75,7 @@ parts:
       - git
       - python3-git
       - python3-pyotp
+      - openssh-client
     stage:
       #- lib64/python3.8
       - bin
