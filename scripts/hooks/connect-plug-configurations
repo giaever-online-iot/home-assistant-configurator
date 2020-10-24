@@ -4,7 +4,7 @@ logger "Connect plug!"
 
 if [ ! -f "${SNAP_DATA}/settings.conf" ]; then
     logger "Settings-file is missing"
-    exit 1
+    source "$SNAP/snap/hooks/install"
 else
     logger "Settings.conf exists, continue plug:configurations"
 fi
