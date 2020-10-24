@@ -2,6 +2,11 @@
 
 set -e
 
+if [ -f "${SNAP_DATA}/settings.conf" ]; then
+    logger "Already copied ${SNAP}/settings.conf to ${SNAP_DATA}/settings.conf"
+    exit 0
+fi
+
 logger "Copying ${SNAP}/settings.conf to ${SNAP_DATA}/settings.conf"
 cp "${SNAP}/settings.conf" "${SNAP_DATA}/settings.conf"
 
@@ -17,3 +22,4 @@ $SNAP/bin/update-settings "${SNAP_DATA}/settings.conf" "install" | while read LI
     logger "${LINE}"
     snapctl set "${LINE}"
 done
+logger "Settings set. See 'snap get ${SNAP_NAME} -l'"
