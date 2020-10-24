@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
 
 set -e
+
+logger "Copying ${SNAP}/settings.conf to ${SNAP_DATA}/settings.conf"
 cp "${SNAP}/settings.conf" "${SNAP_DATA}/settings.conf"
 
+if [ $? -ne 0 ]; then
+    logger "Failed moving settings.conf!"
+    exit 1
+else
+    logger "Moved settings.conf successfully!"
+fi
+
+logger "Read initial settings to snap"
 $SNAP/bin/update-settings "${SNAP_DATA}/settings.conf" "install" | while read LINE; do
     logger "${LINE}"
     snapctl set "${LINE}"

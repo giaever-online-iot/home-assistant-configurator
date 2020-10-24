@@ -2,6 +2,15 @@
 
 set -e 
 
+logger "Configure snap!"
+
+if [ ! -f "${SNAP_DATA}/settings.conf" ]; then
+    logger "Settings-file is missing"
+    exit 1
+else
+    logger "Settings.conf exists, continue configure"
+fi
+
 snapctl get server | $SNAP/bin/update-settings "${SNAP_DATA}/settings.conf" update
 snapctl restart "${SNAP_NAME}.server"
 exit $?

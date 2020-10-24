@@ -89,11 +89,17 @@ parts:
       snapcraftctl build
       cp ${SNAPCRAFT_PART_BUILD}/settings.conf ${SNAPCRAFT_PART_INSTALL}/settings.conf
   scripts:
+    after:
+      - configurator
     plugin: dump
     source: ./scripts
     source-type: local
     organize:
       hooks: snap/hooks
+    # stage:
+    #   - lib
+    #   - usr
+    #   - etc
     stage-packages:
       - uuid
       - libossp-uuid16
