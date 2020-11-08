@@ -64,6 +64,8 @@ def iterate_obj(obj, orig, i, path=""):
                         orig[origkey] = ast.literal_eval(v)
                     elif conversion[1] == bool:
                         orig[origkey] = True if v.lower() == "true" else False
+                    elif conversion[1] == int:
+                        orig[origkey] = (conversion[1])(v)
                     else:
                         if v.lower() in ("none", "null"):
                             v = "null"
